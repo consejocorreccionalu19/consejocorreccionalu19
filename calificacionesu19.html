@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Registro de Calificaciones — Unidad 19 S.P.F.</title>
+<style>
+  :root{
+    --navy:#1c2b3a;
+    --navy-deep:#101a24;
+    --steel:#3f5872;
+    --paper:#f4f2ec;
+    --line:#c9c2b2;
+    --ink:#1c2b3a;
+    --accent:#8a6d3b;
+    --good:#2f6f4f;
+    --bad:#a3402f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Georgia","Times New Roman",serif;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .app{max-width:1400px;margin:0 auto;padding:28px 24px 80px;}
+
+  header.top{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:3px solid var(--navy);
+    padding-bottom:14px;margin-bottom:6px;
+  }
+  header.top h1{
+    font-size:26px;margin:0;letter-spacing:.2px;color:var(--navy-deep);
+    font-weight:700;
+  }
+  header.top .sub{font-family:Arial,Helvetica,sans-serif;font-size:12.5px;color:var(--steel);margin-top:4px;}
+  header.top .unit-badge{
+    font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#fff;
+    background:var(--navy);padding:6px 14px;border-radius:2px;
+    letter-spacing:.5px;
+  }
+
+  .toolbar{
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    margin:18px 0 14px;font-family:Arial,Helvetica,sans-serif;
+  }
+  .toolbar .spacer{flex:1;}
+  button{
+    font-family:Arial,Helvetica,sans-serif;
+    font-size:13px;padding:9px 16px;border-radius:2px;border:1px solid var(--navy);
+    background:#fff;color:var(--navy);cursor:pointer;
+  }
+  button.primary{background:var(--navy);color:#fff;}
+  button.primary:hover{background:var(--navy-deep);}
+  button:hover{background:#e9e4d8;}
+  button.primary:hover{background:var(--navy-deep);}
+  button.danger{border-color:var(--bad);color:var(--bad);}
+  button.danger:hover{background:#f6e9e6;}
+  button:disabled{opacity:.5;cursor:not-allowed;}
+
+  .meta-bar{
+    font-family:Arial,Helvetica,sans-serif;font-size:12.5px;color:var(--steel);
+    display:flex;gap:22px;flex-wrap:wrap;margin-bottom:14px;
+  }
+  .meta-bar label{display:flex;flex-direction:column;gap:3px;color:var(--navy-deep);font-weight:600;}
+  .meta-bar input{
+    font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:5px 7px;
+    border:1px solid var(--line);border-radius:2px;background:#fff;color:var(--ink);
+  }
+
+  .table-wrap{
+    overflow-x:scroll;overflow-y:auto;max-height:78vh;
+    border:1px solid var(--line);background:#fff;
+    -webkit-overflow-scrolling:touch;
+  }
+  .table-wrap::-webkit-scrollbar{height:14px;width:14px;}
+  .table-wrap::-webkit-scrollbar-track{background:#ece8dc;}
+  .table-wrap::-webkit-scrollbar-thumb{background:var(--steel);border-radius:7px;border:3px solid #ece8dc;}
+  .scroll-bar{display:flex;gap:8px;align-items:center;margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:var(--steel);}
+  .scroll-bar button{padding:6px 14px;font-size:14px;line-height:1;}
+  table.grid{border-collapse:collapse;width:max-content;min-width:100%;font-family:Arial,Helvetica,sans-serif;font-size:12.5px;}
+  table.grid thead th{
+    background:var(--navy);color:#fff;font-weight:600;text-align:left;
+    padding:9px 8px;position:sticky;top:0;white-space:nowrap;
+  }
+  table.grid tbody td{
+    padding:0;border-bottom:1px solid var(--line);border-right:1px solid #eae6da;
+    vertical-align:top;
+  }
+  table.grid tbody tr:nth-child(even){background:#faf9f5;}
+  table.grid tbody tr:hover{background:#f0ece0;}
+  table.grid thead th{z-index:2;}
+  table.grid thead th[data-field]{white-space:nowrap;}
+  .th-label{margin-right:6px;}
+  .filter-btn{
+    padding:1px 5px;font-size:10px;line-height:14px;border:1px solid #6d829a;border-radius:2px;
+    background:#2b3f54;color:#dfe6ee;cursor:pointer;vertical-align:middle;
+  }
+  .filter-btn:hover{background:#4a6580;}
+  .filter-btn.active{background:var(--accent);border-color:#d9b877;color:#fff;}
+  #filter-pop{
+    display:none;position:fixed;z-index:500;width:260px;background:#fff;
+    border:1px solid var(--steel);box-shadow:0 6px 20px rgba(0,0,0,.25);border-radius:3px;
+    font-family:Arial,Helvetica,sans-serif;font-size:12.5px;padding:8px;
+  }
+  #filter-pop .fp-search{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:2px;font-size:12.5px;margin-bottom:6px;}
+  #filter-pop .fp-all{display:block;padding:4px 2px;font-weight:600;border-bottom:1px solid var(--line);margin-bottom:4px;cursor:pointer;}
+  #filter-pop .fp-list{max-height:240px;overflow-y:auto;}
+  #filter-pop .fp-item{display:flex;gap:6px;align-items:flex-start;padding:3px 2px;cursor:pointer;}
+  #filter-pop .fp-item:hover{background:#f0ece0;}
+  #filter-pop .fp-item span{word-break:break-word;}
+  #filter-pop .fp-actions{display:flex;justify-content:space-between;gap:6px;margin-top:8px;}
+  #filter-pop .fp-actions button{padding:6px 12px;font-size:12.5px;}
+  .cell-input{
+    width:36mm;min-width:36mm;max-width:36mm;
+    height:18mm;min-height:18mm;max-height:18mm;
+    box-sizing:border-box;
+    border:none;background:transparent;
+    padding:5px 8px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:var(--ink);
+    resize:none;overflow-y:auto;
+    white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;
+    line-height:1.3;vertical-align:top;
+  }
+  .cell-input[data-field="causa"]{width:70mm;min-width:70mm;max-width:70mm;}
+  .cell-input[data-field="observacion"]{width:70mm;min-width:70mm;max-width:70mm;}
+  .cell-input[data-field="juzgado"],
+  .cell-input[data-field="conducta"],
+  .cell-input[data-field="concepto"],
+  .cell-input[data-field="1°concepto"],
+  .cell-input[data-field="fase"]{width:42mm;min-width:42mm;max-width:42mm;}
+  .cell-input[data-field="apellido"],
+  .cell-input[data-field="nombre"]{width:44mm;min-width:44mm;max-width:44mm;}
+  .cell-input[data-field="lpu"],
+  .cell-input[data-field="fingreso"],
+  .cell-input[data-field="pena"],
+  .cell-input[data-field="vencimiento"]{width:32mm;min-width:32mm;max-width:32mm;}
+  .cell-input:focus{outline:2px solid var(--steel);outline-offset:-2px;background:#fff;}
+  td.col-n{width:38px;text-align:center;color:var(--steel);font-weight:600;}
+  td.col-chk{width:32px;text-align:center;}
+  td.col-chk input, th.col-chk input{width:15px;height:15px;cursor:pointer;}
+  th.col-chk{text-align:center;}
+  tr.row-selected{background:#eae2c9 !important;}
+  td.col-actions{width:44px;text-align:center;}
+  td.col-actions button{padding:4px 8px;font-size:14px;border:none;background:none;color:var(--bad);}
+  td.col-actions button:hover{background:#f6e9e6;border-radius:2px;}
+
+  /* ---- Modo solo lectura ---- */
+  body.viewer-mode td.col-actions, body.viewer-mode th.col-actions{display:none;}
+  body.viewer-mode .cell-input{cursor:default;}
+  body.viewer-mode .cell-input:focus{outline:none;background:transparent;}
+
+  .footer-row{
+    display:flex;justify-content:space-between;align-items:center;margin-top:10px;
+    font-family:Arial,Helvetica,sans-serif;font-size:12px;color:var(--steel);
+  }
+  .status{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:var(--good);min-height:16px;}
+
+  /* ================= PRINT ================= */
+  #print-root{display:none;}
+  @page{ size: A4 landscape; margin: 9mm 8mm 6mm 8mm; }
+  @media print{
+    body > *:not(#print-root){display:none !important;}
+    #print-root{display:block !important;width:100%;}
+    .print-page{page-break-after:always;}
+    .print-page:last-child{page-break-after:auto;}
+  }
+  .print-page{width:281mm;display:flex;gap:6mm;}
+  .boleta{
+    width:50%;box-sizing:border-box;border:1.5px solid #000;padding:4mm 5mm 3mm;
+    font-family:Calibri,Carlito,Arial,sans-serif;color:#000;font-size:10pt;line-height:1.22;
+  }
+  .boleta .b-head{display:flex;justify-content:space-between;align-items:baseline;font-weight:bold;font-size:1em;margin-bottom:5px;}
+  .boleta .b-head .periodo-val{font-size:1.3em;font-weight:bold;}
+  .boleta .sec-title{font-size:1em;margin:6px 0 2px;font-weight:bold;}
+  .boleta .datos-row{margin:1px 0 1px 4px;font-size:0.94em;}
+  .boleta .lbl{text-decoration:underline;}
+  .boleta .a19{float:right;font-weight:bold;}
+  .chk{display:inline-block;width:0.75em;height:0.75em;border:1px solid #000;vertical-align:middle;
+       text-align:center;font-size:0.85em;line-height:0.7em;font-weight:bold;margin-left:3px;}
+
+  .obj-block{margin:2px 0 0;}
+  table.obj-table{border-collapse:collapse;margin:0 0 0 4px;}
+  table.obj-table th{font-weight:bold;font-size:0.62em;text-align:center;line-height:1.1;
+       padding:0 0 2px;vertical-align:bottom;width:2.9em;}
+  table.obj-table th.label-th{width:auto;}
+  table.obj-table td{border:1px solid #000;width:2.9em;height:0.85em;padding:0;}
+  table.obj-table td.label-col{border:none;text-align:left;font-size:0.85em;padding:0 10px 0 0;
+       white-space:nowrap;width:auto;}
+
+  .sancion-row{margin:1px 0 0 4px;font-size:0.94em;}
+  .sancion-row span{margin-right:18px;}
+
+  .obs-title{margin-top:5px;}
+  .obs-line{border-bottom:1px solid #000;height:16px;margin:6px 0;}
+
+  .acta-title{text-align:center;font-weight:bold;font-size:1.02em;margin:9px 0 3px;text-decoration:underline;}
+  .acta-text{text-align:justify;margin-bottom:4px;font-size:0.94em;}
+  .cal-row{font-weight:bold;margin:4px 0;font-size:0.96em;}
+  .cal-row .concepto-lbl{margin-left:50px;}
+  .promovido{margin:3px 0;font-weight:bold;font-size:0.96em;}
+  .legal-text{text-align:justify;font-size:0.72em;margin:5px 0 10px;}
+  .sign-row{display:flex;justify-content:space-around;margin-top:10px;text-align:center;font-size:0.78em;}
+  .sign-row .sign{width:40%;border-top:1px solid #000;padding-top:3px;}
+
+  /* ---- Boleta de bajada ---- */
+  .bajada{
+    width:50%;box-sizing:border-box;border:1.5px solid #000;padding:5mm 6mm;
+    font-family:Calibri,Carlito,Arial,sans-serif;color:#000;font-size:11pt;line-height:1.5;
+  }
+  .bajada .baj-title{font-weight:bold;font-style:italic;}
+  .bajada .baj-title.baj-blue{color:#1a3fa0;}
+  .bajada .baj-dest{font-weight:bold;margin-top:4px;}
+  .bajada .baj-fecha{color:#1a3fa0;margin-top:4px;}
+  .bajada .baj-persona{color:#1a3fa0;font-weight:bold;margin:22px 0 22px;}
+  .bajada .baj-persona-list{color:#1a3fa0;font-weight:bold;margin:14px 0 14px;}
+  .bajada .baj-persona-list .baj-persona-item{margin:2px 0;padding-left:1.2em;text-indent:-1.2em;}
+  .bajada .baj-firmante{color:#1a3fa0;margin:0 0 16px;}
+  .bajada table.baj-table{width:100%;border-collapse:collapse;margin-bottom:22px;}
+  .bajada table.baj-table td{width:50%;vertical-align:top;padding:0;}
+  .bajada .baj-head{font-weight:bold;}
+  .bajada .baj-sub{color:#1a3fa0;font-size:0.92em;}
+  .bajada .baj-cred-row{display:flex;justify-content:space-between;font-weight:bold;margin:0 0 16px;}
+  .bajada .baj-salida{font-weight:bold;margin:0 0 26px;}
+  .bajada .baj-footer{text-align:center;font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div id="pw-overlay" style="position:fixed;inset:0;background:#1c2b3a;display:flex;align-items:center;justify-content:center;z-index:999;font-family:Arial,Helvetica,sans-serif;">
+  <div style="background:#fff;padding:36px 40px;border-radius:4px;width:320px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.4);">
+    <div style="font-size:13px;color:#3f5872;font-weight:bold;letter-spacing:.5px;margin-bottom:4px;">UNIDAD 19 · S.P.F.</div>
+    <h2 style="margin:0 0 18px;color:#1c2b3a;font-size:18px;">Acceso al registro</h2>
+    <input id="pw-input" type="password" placeholder="Contraseña" style="width:100%;padding:10px;font-size:14px;border:1px solid #c9c2b2;border-radius:2px;box-sizing:border-box;margin-bottom:10px;">
+    <button id="pw-submit" style="width:100%;padding:10px;background:#1c2b3a;color:#fff;border:none;border-radius:2px;font-size:14px;cursor:pointer;">Ingresar</button>
+    <div id="pw-error" style="color:#a3402f;font-size:12.5px;margin-top:10px;min-height:16px;"></div>
+  </div>
+</div>
+
+<div class="app" id="app-root" style="display:none">
+
+  <header class="top">
+    <div>
+      <h1>Registro de Calificaciones</h1>
+      <div class="sub">Personas privadas de la libertad — Consejo Correccional</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+      <div class="unit-badge">UNIDAD 19 · S.P.F.</div>
+      <div id="role-badge" style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:var(--steel);"></div>
+    </div>
+  </header>
+
+  <div class="meta-bar">
+    <label>Período<input id="meta-periodo" type="text" value="3° 2026"></label>
+    <label>Fecha de emisión<input id="meta-fecha" type="text" value="01/09/2026"></label>
+    <label>Día del acta<input id="meta-dia" type="text" value="02"></label>
+    <label>Mes del acta<input id="meta-mes" type="text" value="SEPTIEMBRE"></label>
+    <label>Año del acta<input id="meta-anio" type="text" value="2026"></label>
+    <label>Firma / cargo<input id="meta-firma" type="text" value="Subalcaide Lic. Oscar F. CRUZ" style="min-width:220px"></label>
+  </div>
+
+  <div class="toolbar">
+    <button class="primary" id="btn-add">+ Agregar persona</button>
+    <button id="btn-import">Importar Excel (.xlsx / .csv)</button>
+    <input type="file" id="file-input" accept=".xlsx,.csv" style="display:none">
+    <button id="btn-export">Exportar a Excel</button>
+    <button id="btn-del-selected" class="danger" disabled>Eliminar seleccionadas</button>
+    <div class="spacer"></div>
+    <span id="sel-label" style="font-size:12.5px;color:var(--steel)"></span>
+    <button id="btn-print-all" class="primary">🖨️ Imprimir boletas de calificación (todas)</button>
+    <button id="btn-print-bajada" class="primary">🖨️ Imprimir boletas de bajada (todas)</button>
+  </div>
+
+  <div class="scroll-bar">
+    <button id="btn-scroll-left" title="Desplazar a la izquierda">◀</button>
+    <button id="btn-scroll-right" title="Desplazar a la derecha">▶</button>
+    <button id="btn-clear-filters" disabled>✕ Quitar filtros</button>
+    <span>Deslizá la tabla hacia los costados para ver todas las columnas</span>
+  </div>
+
+  <div class="table-wrap" id="table-wrap">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th class="col-chk"><input type="checkbox" id="chk-all" title="Seleccionar todo"></th>
+          <th class="col-n">N°</th>
+          <th data-field="apellido">Apellido</th>
+          <th data-field="nombre">Nombre</th>
+          <th data-field="lpu">LPU</th>
+          <th data-field="fingreso">F/INGRESO</th>
+          <th class="col-causa" data-field="causa">Causa / Delito</th>
+          <th class="col-juzgado" data-field="juzgado">Juzgado</th>
+          <th class="col-pena" data-field="pena">Pena</th>
+          <th data-field="vencimiento">Vencimiento</th>
+          <th data-field="conducta">Conducta</th>
+          <th data-field="concepto">Concepto</th>
+          <th data-field="fase">Fase</th>
+          <th data-field="observacion">Observación</th>
+          <th data-field="1°concepto">1° Concepto</th>
+          <th class="col-actions"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer-row">
+    <span id="count-label">0 personas registradas</span>
+    <span class="status" id="status-msg"></span>
+  </div>
+
+</div>
+
+<div id="filter-pop"></div>
+<div id="print-root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const COLUMNS = ["apellido","nombre","lpu","fingreso","causa","juzgado","pena","vencimiento","conducta","concepto","fase","observacion","1°concepto"];
+let data = [];
+let nextId = 1;
+const selectedIds = new Set();
+
+// Asigna un id estable a cada fila (si no lo tiene) y ordena alfabéticamente por apellido y nombre.
+function normalizeAndSort(){
+  data.forEach(r => { if(r.id === undefined || r.id === null){ r.id = nextId++; } else if(r.id >= nextId){ nextId = r.id + 1; } });
+  data.sort((a,b) =>
+    String(a.apellido||'').localeCompare(String(b.apellido||''), 'es', {sensitivity:'base'}) ||
+    String(a.nombre||'').localeCompare(String(b.nombre||''), 'es', {sensitivity:'base'})
+  );
+}
+
+const seed = [
+["ALEGRE","BRIAN EMANUEL","445605","ROBO AGRAV. CON ESCALAMIENTO, EN GRADO DE TENTATIVA.","JNEP 2 CABA","1 año y 6 meses","22/07/2027","EJEMPLAR NUEVE (09)","REGULAR TRES (03)","SOCIALIZACION"],
+["ALLENDE HERNANDEZ","SEBASTIAN ANTONIO","438679","ROBO EN GRADO DE TENTATIVA","JNEP 1 CABA","1 año","16/03/2027","MUY BUENO OCHO (08)","MALO DOS (02)","SOCIALIZACION"],
+["ARACENA AYALA","GARI FABIAN","445775","HURTO AGRAVADO POR HABER SIDO COMETIDO CON GANZUA / TENTATIVA DE HURTO DOBLEMENTE AGRAVADO POR VEHICULO","JNEP 1 CABA","1 año y 4 meses","22/01/2027","EJEMPLAR NUEVE (09)","REGULAR TRES (03)","SOCIALIZACION"],
+["ASEBEDO","GERMAN ANTONIO","446387","ROBO SIMPLE","JNEP 4 CABA","3 años","06/12/2027","MUY BUENO OCHO (08)","MALO DOS (02)","SOCIALIZACION"],
+["AVALOS SANDOVAL","JORGE EZEQUIEL","445607","TENTATIVA DE ROBO","JNEP 4 CABA","3 meses y 6 meses","27/06/2027","EJEMPLAR NUEVE (09)","REGULAR TRES (03)","SOCIALIZACION"],
+["BARROCA","ALBERTO NAHUEL","328722","HURTO","JNEP 4 CABA","1 año","02/02/2027","EJEMPLAR NUEVE (09)","REGULAR TRES (03)","SOCIALIZACION"],
+["CACERES","RAMIRO EZEQUIEL","324680","DEFRAUDACION INFORMATICA Y ENCUBRIMIENTO","JNEP 4 CABA","1 año","09/03/2027","MUY BUENO OCHO (08)","REGULAR TRES (03)","SOCIALIZACION"],
+["CALDIROLA","CHRISTIAN EDUARDO","248154","TENTATIVA DE ROBO","JNEP 4 CABA","1 año y 6 meses","17/07/2027","EJEMPLAR NUEVE (09)","REGULAR TRES (03)","SOCIALIZACION"],
+["CAMPOS","ARIEL MAXIMILIANO","","ROBO","JNEP 1 CABA","1 AÑO","20/04/2027","MUY BUENO OCHO (08)","REGULAR TRES (03)","SOCIALIZACION"],
+["CARDOZO MEDINA","JONATHAN DANILO","277630","PORTACION ILEGITIMA DE ARMA DE FUEGO DE USO CIVIL","JNEP 4 CABA","1 AÑO Y 2 MESES","20/12/2026","MUY BUENO OCHO (08)","REGULAR TRES (03)","SOCIALIZACION"],
+["CHAZARRETA","EMANUEL","327964","AMENAZAS","GEP 2","6 meses","23/12/2026","MUY BUENO OCHO (08)","REGULAR TRES (03)","SOCIALIZACION"],
+["DUARTE BRITEZ","CRISTOBAL","412334","HURTO CON ESCALAMIENTO","JNEP 5 CABA","10 meses","08/01/2027","EJEMPLAR NUEVE (09)","REGULAR TRES (03)","SOCIALIZACION"],
+["FORLINO","DIEGO RAUL","303851","TENTATIVA DE ROBO AGRAVADO CON ESCALAMIENTO","JNEP 5 CABA","1 año y 6 meses","26/09/2027","EJEMPLAR NUEVE (09)","REGULAR TRES (03)","SOCIALIZACION"],
+["FRETE","FACUNDO GABRIEL","445774","ROBO","JNEP 2 CABA","1 año y 6 meses","29/04/2027","EJEMPLAR NUEVE (09)","MALO DOS (02)","SOCIALIZACION"],
+["GARAY","DIEGO HUGO","346864","ENCUBRIMIENTO","JNEP 3 CABA","1 año","19/12/2026","EJEMPLAR NUEVE (09)","REGULAR TRES (03)","SOCIALIZACION"],
+["GARCIA","JONATHAN ARMANDO","446234","TENTATIVA DE ROBO AGRAVADO","JNEP 5 CABA","1 AÑO Y 6 MESES","04/06/2027","MUY BUENO OCHO (08)","REGULAR TRES (03)","SOCIALIZACION"],
+["GONZALEZ YAÑEZ","MANUEL HUMBERTO","445606","TENTATIVA DE HURTO","JNEP 2 CABA","2 años y 2 meses","03/09/2027","EJEMPLAR NUEVE (09)","REGULAR TRES (03)","SOCIALIZACION"],
+["GUTIERREZ PEÑA","DARWIN FERNEIT","446382","ENCUBRIMIENTO AGRAVADO POR ANIMO DE LUCRO","JNEP 3 CABA","1 año y 1 mes","27/01/2027","MUY BUENO OCHO (08)","REGULAR TRES (03)","SOCIALIZACION"],
+["JUAREZ AVALOS","ULISES EZEQUIEL","228219","ROBO AGRAVADO POR HABER SIDO COMETIDO SOBRE UN VEHICULO DEJADO EN LA VIA PUBLICA","JNEP 4 CABA","1 año y 6 meses","24/08/2027","EJEMPLAR NUEVE (09)","REGULAR CUATRO (04)","SOCIALIZACION"],
+["OBREGON","ANTONIO DANIEL","315299","ALTERACION DE NUMERACION DE UN OBJETO REGISTRABLE","JNEP 2 CABA","10 meses","12/12/2026","MUY BUENO OCHO (08)","MALO DOS (02)","SOCIALIZACION"],
+["PARDO PRETARA","TOBIAS URIEL","445745","TENTATIVA DE ROBO","JNEP 2 CABA","11 meses","23/12/2026","EJEMPLAR NUEVE (09)","MALO DOS (02)","SOCIALIZACION"],
+["RIOS","CRISTIAN DANIEL","327613","ROBO SIMPLE REITERADO EN TRES OPORTUNIDADES","JNEP 5 CABA","1 año y 6 meses","27/02/2027","EJEMPLAR NUEVE (09)","REGULAR CUATRO (04)","SOCIALIZACION"],
+["ROLDAN","RICARDO MARCELO","","ROBO Y RESISTENCIA A LA AUTORIDAD","JNEP 3 CABA","1 AÑO Y 2 MESES","07/12/2026","MUY BUENO OCHO (08)","MALO DOS (02)","SOCIALIZACION"],
+["SEGOVIA","JOAQUIN FERNANDO","441874","ROBO","JNEP 1 CABA","2 años y 4 meses","12/07/2027","MUY BUENO OCHO (08)","MALO DOS (02)","SOCIALIZACION"],
+["SEVERINO","JUAN MANUEL","413291","ROBO SIMPLE","JNEP 4 CABA","1 año y 4 meses","16/03/2027","EJEMPLAR NUEVE (09)","MALO DOS (02)","SOCIALIZACION"],
+["TACLA","MARCOS RUBEN","436918","ESTAFA REITERADA EN 3 OPORTUNIDADES","JNEP 1 CABA","1 AÑO","17/04/2027","MUY BUENO OCHO (08)","MALO DOS (02)","SOCIALIZACION"],
+["VALLEJOS","MATIAS IGNACIO","348820","HURTO CALIFICADO CON ESCALAMIENTO","JNEP 1 CABA","1 año","06/03/2027","EJEMPLAR NUEVE (09)","REGULAR TRES (03)","SOCIALIZACION"],
+["VIÑABAL","BRIAN ESTEBAN","319419","ENCUBRIMIENTO","JNEP 2 CABA","1 año","07/02/2027","EJEMPLAR NUEVE (09)","REGULAR TRES (03)","SOCIALIZACION"],
+["ZEBALLOS","EMILIANO EZEQUIEL","293289","HURTO AGRAVADO POR HABER SIDO COMETIDO MEDIANTE USO DE LLAVE VERDADERA HALLADA / EN CONCURSO REAL CON EL DELITO DE ROBO SIMPLE EN CALIDAD DE AUTOR","JNEP 3 CF","1 año y 4 meses","31/05/2027","MUY BUENO OCHO (08)","MALO DOS (02)","SOCIALIZACION"]
+].map(r => ({apellido:r[0],nombre:r[1],lpu:r[2],causa:r[3],juzgado:r[4],pena:r[5],vencimiento:r[6],conducta:r[7],concepto:r[8],fase:r[9]}));
+
+// ============ FILTROS TIPO EXCEL ============
+const filters = {}; // campo -> Set de valores permitidos (si no existe, no hay filtro)
+function getVisible(){
+  const entries = Object.entries(filters);
+  if(!entries.length) return data;
+  return data.filter(r => entries.every(([f,set]) => set.has(String(r[f]||''))));
+}
+
+const tbody = document.getElementById('tbody');
+const countLabel = document.getElementById('count-label');
+const statusMsg = document.getElementById('status-msg');
+
+function showStatus(msg, ms){
+  statusMsg.textContent = msg;
+  setTimeout(()=>{ if(statusMsg.textContent===msg) statusMsg.textContent=''; }, ms || 2200);
+}
+
+// ============ CONFIGURACIÓN ============
+const APP_PASSWORD_EDITOR = "laschicas";     // <-- clave para quienes pueden MODIFICAR la base
+const APP_PASSWORD_VIEWER = "consejou19";  // <-- clave para quienes solo pueden VER (sin editar)
+let userRole = null; // 'editor' | 'viewer'
+// =======================================================================
+
+const STORAGE_KEY = 'u19-registro';
+
+function loadData(){
+  let saved = null;
+  try{ saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); }catch(e){ console.warn('No se pudo leer lo guardado', e); }
+  data = (saved && Array.isArray(saved.data)) ? saved.data : seed;
+  normalizeAndSort();
+  render();
+}
+
+let dirty = false;        // hay cambios tipeados que todavía no se guardaron
+let saveTimer = null;
+
+function persist(){
+  if(userRole !== 'editor') return; // los lectores nunca guardan
+  clearTimeout(saveTimer);
+  dirty = false;
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({data, updatedAt: Date.now()}));
+    showStatus('✔ Guardado');
+  }catch(e){
+    console.error('Error al guardar', e);
+    showStatus('⚠ NO SE GUARDÓ (' + (e.name || e.message) + ')', 20000);
+  }
+}
+
+// Autoguardado: guarda ~0,8 s después de dejar de tipear, al cambiar de pestaña o al cerrar.
+function flushSave(){ if(dirty) persist(); }
+tbody.addEventListener('input', (e) => {
+  const t = e.target;
+  if(userRole !== 'editor' || !t.matches('.cell-input[data-field]')) return;
+  const row = data.find(r => r.id === +t.dataset.id);
+  if(!row) return;
+  row[t.dataset.field] = t.value;
+  dirty = true;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(flushSave, 800);
+  showStatus('Guardando…', 1500);
+});
+window.addEventListener('pagehide', flushSave);
+document.addEventListener('visibilitychange', () => { if(document.hidden) flushSave(); });
+window.addEventListener('beforeunload', flushSave);
+
+function render(){
+  tbody.innerHTML = '';
+  const visible = getVisible();
+  visible.forEach((row, idx) => {
+    const tr = document.createElement('tr');
+    const checked = selectedIds.has(row.id);
+    if(checked) tr.classList.add('row-selected');
+    const ro = userRole === 'viewer' ? 'readonly' : '';
+    tr.innerHTML = `<td class="col-chk"><input type="checkbox" class="row-chk" data-id="${row.id}" ${checked?'checked':''}></td>` +
+      `<td class="col-n">${idx+1}</td>` +
+      COLUMNS.map(c => `<td class="col-${c}"><textarea class="cell-input" ${ro} data-id="${row.id}" data-field="${c}" title="${escapeAttr(row[c]||'')}">${escapeHtml(row[c]||'')}</textarea></td>`).join('') +
+      `<td class="col-actions"><button data-del="${row.id}" title="Eliminar">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+  countLabel.textContent = visible.length === data.length
+    ? `${data.length} persona${data.length===1?'':'s'} registrada${data.length===1?'':'s'}`
+    : `Mostrando ${visible.length} de ${data.length} personas (filtrado)`;
+  updateFilterButtons();
+  updateSelectionUI();
+}
+
+function updateSelectionUI(){
+  // Limpia de la selección los ids que ya no existen en los datos
+  const validIds = new Set(data.map(r => r.id));
+  Array.from(selectedIds).forEach(id => { if(!validIds.has(id)) selectedIds.delete(id); });
+
+  const selLabel = document.getElementById('sel-label');
+  const btnDel = document.getElementById('btn-del-selected');
+  const btnPrint = document.getElementById('btn-print-all');
+  const btnPrintBajada = document.getElementById('btn-print-bajada');
+  const chkAll = document.getElementById('chk-all');
+  const n = selectedIds.size;
+
+  selLabel.textContent = n > 0 ? `${n} seleccionada${n===1?'':'s'}` : '';
+  btnDel.disabled = n === 0;
+  btnPrint.textContent = n > 0 ? `🖨️ boletas de calificación (${n} seleccionada${n===1?'':'s'})` : '🖨️ boletas de calificación';
+  btnPrintBajada.textContent = n > 0 ? `🖨️ boletas de bajada (${n} seleccionada${n===1?'':'s'})` : '🖨️ boletas de bajada';
+
+  const vis = getVisible();
+  const nVis = vis.filter(r => selectedIds.has(r.id)).length;
+  if(vis.length === 0 || nVis === 0){
+    chkAll.checked = false;
+    chkAll.indeterminate = false;
+  } else if(nVis === vis.length){
+    chkAll.checked = true;
+    chkAll.indeterminate = false;
+  } else {
+    chkAll.checked = false;
+    chkAll.indeterminate = true;
+  }
+}
+
+function escapeAttr(s){
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+}
+
+tbody.addEventListener('change', (e) => {
+  const t = e.target;
+  if(t.matches('.cell-input[data-field]')){
+    if(userRole !== 'editor') return;
+    const id = +t.dataset.id, field = t.dataset.field;
+    const row = data.find(r => r.id === id);
+    if(!row) return;
+    row[field] = t.value;
+    t.title = t.value;
+    if(field === 'apellido' || field === 'nombre'){
+      // Reordena automáticamente al abecedario cuando cambia el apellido o el nombre
+      normalizeAndSort();
+      render();
+      const input = tbody.querySelector(`.cell-input[data-field="${field}"][data-id="${id}"]`);
+      input?.focus();
+    }
+    persist();
+  } else if(t.matches('.row-chk')){
+    const id = +t.dataset.id;
+    if(t.checked) selectedIds.add(id); else selectedIds.delete(id);
+    t.closest('tr')?.classList.toggle('row-selected', t.checked);
+    updateSelectionUI();
+  }
+});
+
+tbody.addEventListener('click', (e) => {
+  const t = e.target;
+  if(t.matches('button[data-del]')){
+    if(userRole !== 'editor') return;
+    const id = +t.dataset.del;
+    const row = data.find(r => r.id === id);
+    if(!row) return;
+    if(confirm(`¿Eliminar a ${row.apellido} ${row.nombre}?`)){
+      data = data.filter(r => r.id !== id);
+      selectedIds.delete(id);
+      render();
+      persist();
+    }
+  }
+});
+
+const pop = document.getElementById('filter-pop');
+let popField = null;
+
+function closePop(){ pop.style.display = 'none'; popField = null; }
+
+function updateFilterButtons(){
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', !!filters[b.dataset.filter]));
+  const any = Object.keys(filters).length > 0;
+  const bc = document.getElementById('btn-clear-filters');
+  if(bc) bc.disabled = !any;
+}
+
+// Inserta el botón ▼ en cada encabezado filtrable
+document.querySelectorAll('th[data-field]').forEach(th => {
+  const label = th.textContent;
+  th.innerHTML = `<span class="th-label">${escapeHtml(label)}</span><button class="filter-btn" data-filter="${th.dataset.field}" title="Filtrar ${escapeAttr(label)}">▼</button>`;
+});
+
+document.querySelector('table.grid thead').addEventListener('click', (e) => {
+  const btn = e.target.closest('.filter-btn');
+  if(!btn) return;
+  e.stopPropagation();
+  const field = btn.dataset.filter;
+  if(popField === field){ closePop(); return; }
+  openPop(field, btn);
+});
+
+function openPop(field, anchor){
+  popField = field;
+  const values = Array.from(new Set(data.map(r => String(r[field]||''))))
+    .sort((a,b) => a.localeCompare(b,'es',{sensitivity:'base',numeric:true}));
+  const cur = filters[field];
+  pop.innerHTML =
+    `<input class="fp-search" type="text" placeholder="Buscar...">` +
+    `<label class="fp-all"><input type="checkbox" id="fp-all"> (Seleccionar todo)</label>` +
+    `<div class="fp-list">` +
+    values.map((v,i) => `<label class="fp-item" data-text="${escapeAttr(v.toLowerCase())}"><input type="checkbox" data-i="${i}" ${(!cur || cur.has(v)) ? 'checked' : ''}><span>${v===''?'(Vacías)':escapeHtml(v)}</span></label>`).join('') +
+    `</div>` +
+    `<div class="fp-actions"><button id="fp-clear">Borrar filtro</button><button class="primary" id="fp-ok">Aceptar</button></div>`;
+
+  const items = () => Array.from(pop.querySelectorAll('.fp-item'));
+  const boxes = () => items().filter(l => l.style.display !== 'none').map(l => l.querySelector('input'));
+  const allBox = pop.querySelector('#fp-all');
+  const syncAll = () => {
+    const b = boxes();
+    const n = b.filter(x => x.checked).length;
+    allBox.checked = b.length > 0 && n === b.length;
+    allBox.indeterminate = n > 0 && n < b.length;
+  };
+  syncAll();
+
+  pop.querySelector('.fp-search').addEventListener('input', (ev) => {
+    const q = ev.target.value.trim().toLowerCase();
+    items().forEach(l => { l.style.display = l.dataset.text.includes(q) ? '' : 'none'; });
+    syncAll();
+  });
+  allBox.addEventListener('change', () => { boxes().forEach(x => x.checked = allBox.checked); syncAll(); });
+  pop.querySelector('.fp-list').addEventListener('change', syncAll);
+  pop.querySelector('#fp-clear').addEventListener('click', () => { delete filters[field]; closePop(); render(); });
+  pop.querySelector('#fp-ok').addEventListener('click', () => {
+    const checked = items().map(l => l.querySelector('input')).filter(x => x.checked).map(x => values[+x.dataset.i]);
+    if(checked.length === values.length) delete filters[field];
+    else filters[field] = new Set(checked);
+    closePop();
+    render();
+  });
+
+  pop.style.display = 'block';
+  const r = anchor.getBoundingClientRect();
+  pop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 272)) + 'px';
+  pop.style.top = (r.bottom + 4) + 'px';
+  pop.querySelector('.fp-search').focus();
+}
+
+document.addEventListener('click', (e) => {
+  if(popField && !pop.contains(e.target) && !e.target.closest('.filter-btn')) closePop();
+});
+document.getElementById('table-wrap').addEventListener('scroll', closePop);
+window.addEventListener('beforeprint', closePop);
+
+document.getElementById('btn-clear-filters').addEventListener('click', () => {
+  Object.keys(filters).forEach(k => delete filters[k]);
+  closePop();
+  render();
+});
+
+document.getElementById('btn-scroll-left').addEventListener('click', () => {
+  document.getElementById('table-wrap').scrollBy({left:-400, behavior:'smooth'});
+});
+document.getElementById('btn-scroll-right').addEventListener('click', () => {
+  document.getElementById('table-wrap').scrollBy({left:400, behavior:'smooth'});
+});
+
+document.getElementById('chk-all').addEventListener('change', (e) => {
+  const vis = getVisible();
+  if(e.target.checked){
+    vis.forEach(r => selectedIds.add(r.id));
+  } else {
+    vis.forEach(r => selectedIds.delete(r.id));
+  }
+  render();
+});
+
+document.getElementById('btn-del-selected').addEventListener('click', () => {
+  if(userRole !== 'editor') return;
+  if(selectedIds.size === 0) return;
+  if(confirm(`¿Eliminar ${selectedIds.size} persona(s) seleccionada(s)?`)){
+    data = data.filter(r => !selectedIds.has(r.id));
+    selectedIds.clear();
+    render();
+    persist();
+  }
+});
+
+document.getElementById('btn-add').addEventListener('click', () => {
+  if(userRole !== 'editor') return;
+  const id = nextId++;
+  data.push({id, apellido:'',nombre:'',lpu:'',fingreso:'',causa:'',juzgado:'',pena:'',vencimiento:'',conducta:'',concepto:'',fase:'',observacion:'','1°concepto':''});
+  // Las filas vacías van al inicio hasta que se cargue el apellido (momento en que se reordenan solas)
+  render();
+  persist();
+  const input = tbody.querySelector(`.cell-input[data-field="apellido"][data-id="${id}"]`);
+  input?.focus();
+});
+
+document.getElementById('btn-export').addEventListener('click', () => {
+  const header = ["N°","APELLIDO","NOMBRE","LPU","F/INGRESO","CAUSA/DELITO","JUZGADO","PENA","VENCIMIENTO","CONDUCTA","CONCEPTO","FASE","OBSERVACION","1° CONCEPTO"];
+  const rows = getVisible().map((r,i)=>[i+1,r.apellido,r.nombre,r.lpu,r.fingreso,r.causa,r.juzgado,r.pena,r.vencimiento,r.conducta,r.concepto,r.fase,r.observacion,r['1°concepto']]);
+  const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Registro");
+  XLSX.writeFile(wb, "registro_calificaciones.xlsx");
+});
+
+document.getElementById('btn-import').addEventListener('click', () => {
+  if(userRole !== 'editor') return;
+  document.getElementById('file-input').click();
+});
+
+document.getElementById('file-input').addEventListener('change', (e) => {
+  if(userRole !== 'editor') return;
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try{
+      const wb = XLSX.read(evt.target.result, {type:'binary', cellDates:true});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, dateNF:'dd/mm/yyyy'});
+      const header = rows[0].map(h => String(h||'').trim().toUpperCase());
+      const idxOf = (names) => header.findIndex(h => names.some(n => h.includes(n)));
+      const iApellido = idxOf(['APELLIDO']);
+      const iNombre = idxOf(['NOMBRE']);
+      const iLpu = idxOf(['LPU']);
+      const iFIngreso = idxOf(['INGRESO']);
+      const iCausa = idxOf(['DELITO','CAUSA']);
+      const iJuzgado = idxOf(['JUZGADO']);
+      const iPena = idxOf(['PENA']);
+      const iVence = idxOf(['VENCE']);
+      const iConducta = idxOf(['CONDUCTA']);
+      const iConcepto = header.findIndex(h => h.includes('CONCEPTO') && !h.includes('1'));
+      const iPrimerConcepto = header.findIndex(h => h.includes('CONCEPTO') && h.includes('1'));
+      const iFase = idxOf(['FASE']);
+      const iObs = idxOf(['OBSERV']);
+      const imported = [];
+      for(let r=1; r<rows.length; r++){
+        const row = rows[r];
+        if(!row || row.every(c => c===undefined || c==='')) continue;
+        imported.push({
+          apellido: row[iApellido]||'',
+          nombre: row[iNombre]||'',
+          lpu: row[iLpu]||'',
+          fingreso: iFIngreso>=0 ? (row[iFIngreso]||'') : '',
+          causa: row[iCausa]||'',
+          juzgado: row[iJuzgado]||'',
+          pena: row[iPena]||'',
+          vencimiento: row[iVence]||'',
+          conducta: row[iConducta]||'',
+          concepto: row[iConcepto]||'',
+          fase: row[iFase]||'',
+          observacion: iObs>=0 ? (row[iObs]||'') : '',
+          '1°concepto': iPrimerConcepto>=0 ? (row[iPrimerConcepto]||'') : ''
+        });
+      }
+      if(imported.length){
+        data = imported;
+        selectedIds.clear();
+        normalizeAndSort();
+        render();
+        persist();
+        showStatus(`Se importaron ${imported.length} personas`);
+      } else {
+        alert('No se encontraron filas para importar. Verificá el formato del archivo.');
+      }
+    }catch(err){
+      alert('No se pudo leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsBinaryString(file);
+  e.target.value = '';
+});
+
+function buildBoletaHTML(row){
+  const periodo = document.getElementById('meta-periodo').value;
+  const fecha = document.getElementById('meta-fecha').value;
+  const dia = document.getElementById('meta-dia').value;
+  const mes = document.getElementById('meta-mes').value;
+  const anio = document.getElementById('meta-anio').value;
+  const firma = document.getElementById('meta-firma').value;
+  const nombreCompleto = `${row.apellido||''}, ${row.nombre||''}`;
+
+  return `
+  <div class="boleta">
+    <div class="b-head"><span>UNIDAD 19 – S.P.F.</span><span>FECHA&nbsp;${fecha}</span><span>PERIODO&nbsp;<span class="periodo-val">${periodo}</span></span></div>
+
+    <div class="sec-title" style="margin-top:0">1. DATOS PERSONALES: <span class="a19">A.19</span></div>
+    <div class="datos-row">a) <span class="lbl">APELLIDO Y NOMBRE:</span> ${nombreCompleto}</div>
+    <div class="datos-row">b) <span class="lbl">L.P.U.:</span> ${row.lpu||''}</div>
+    <div class="datos-row">c) <span class="lbl">SITUACION LEGAL:</span> CONDENADO <span class="chk checked">X</span></div>
+
+    <div class="sec-title">2. OBJETIVOS A ALCANZAR</div>
+    <div class="obj-block">
+      <table class="obj-table">
+        <thead>
+          <tr><th class="label-th"></th><th>CUMPLIDO</th><th>MAYOR<br>COMPROMISO</th><th>EN<br>CUMPLIMIENTO</th><th>NO<br>CUMPLIDO</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="label-col">TRABAJO</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="label-col">ASISTENCIA SOCIAL</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="label-col">EDUCACION</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="label-col">SEGURIDAD INTERNA</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="label-col">ASISTENCIA MEDICA</td><td></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sec-title">3. TIPO DE SANCION EN EL TRIMESTRE:</div>
+    <div class="sancion-row"><span>A. LEVE <span class="chk"></span></span><span>B. MEDIA <span class="chk"></span></span><span>C. GRAVE <span class="chk"></span></span></div>
+
+    <div class="sec-title obs-title">4. OBSERVACIONES</div>
+    <div class="obs-line"></div>
+    <div class="obs-line"></div>
+
+    <div class="acta-title">ACTA DE NOTIFICACION DE CALIFICACION TRIMESTRAL</div>
+    <div class="acta-text">En la Colonia Penal (U.19), a los ${dia} días del mes de <b>${mes} de ${anio}</b> se procede a labrar la presente a efectos de notificar al interno la CALIFICACION DE CONDUCTA Y CONCEPTO.</div>
+
+    <div class="cal-row">CONDUCTA: ${row.conducta||''}<span class="concepto-lbl">CONCEPTO: ${row.concepto||''}</span></div>
+    <div class="promovido">PROMOVIDO A FASE / PERIODO: ${row.fase||''}</div>
+
+    <div class="legal-text">Se hace saber al interno de la posibilidad de recurrir el presente acto administrativo, conforme lo establecido por el art. 55 del Decreto 396/99. Asimismo, el presente acto se realiza conforme a lo establecido en el B.P.N. N° 723/20. No siendo para más se da por finalizada la presente, firmando al pie para constancia el interno causante juntamente con el suscripto que certifica.</div>
+
+    <div class="sign-row">
+      <div class="sign">INTERNO</div>
+      <div class="sign"><b>${firma}</b><br>SECRETARIA CONSEJO CORRECCIONAL<br>UNIDAD 19</div>
+    </div>
+  </div>`;
+}
+
+function escapeHtml(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+function buildBajadaHTML(rows){
+  // Acepta un array de personas (una o varias) y las lista todas dentro de UNA sola boleta de bajada.
+  const now = new Date();
+  const lugarFecha = `José María Ezeiza,  ${now.getDate()} de ${MESES[now.getMonth()]} de ${now.getFullYear()}.-`;
+  const firma = document.getElementById('meta-firma').value;
+
+  const personasHTML = rows.map(row => {
+    const nombreCompleto = `${(row.apellido||'').toUpperCase()} ${(row.nombre||'').toUpperCase()}`.trim();
+    const lpuTxt = row.lpu ? ` (LPU Nº ${escapeHtml(row.lpu)})` : '';
+    return `<div class="baj-persona-item">${escapeHtml(nombreCompleto)}${lpuTxt}</div>`;
+  }).join('');
+
+  return `
+  <div class="bajada">
+    <div class="baj-title">SERVICIO PENITENCIARIO FEDERAL ARGENTINO</div>
+    <div class="baj-title baj-blue">COLONIA PENAL DE EZEIZA (U.19)</div>
+    <div class="baj-dest">CON DESTINO A: CONSEJO CORRECCIONAL</div>
+    <div class="baj-fecha">${escapeHtml(lugarFecha)}</div>
+    <div class="baj-persona-list">${personasHTML}</div>
+    <div class="baj-firmante">${escapeHtml(firma)}</div>
+    <table class="baj-table">
+      <tr><td class="baj-head">SOLICITANTE</td><td class="baj-head">AUTORIZANTE</td></tr>
+      <tr><td class="baj-sub">FIRMA, ACLARACION</td><td class="baj-sub">FIRMA Y SELLO</td></tr>
+    </table>
+    <div class="baj-cred-row"><span>CRED Nº:</span><span>REINGRESO..............HORAS</span></div>
+    <div class="baj-salida">SALIDA:..........:..........HORAS</div>
+    <div class="baj-footer">FIRMA Y CRED. AGENTE</div>
+  </div>`;
+}
+
+const BAJADA_MAX_POR_BOLETA = 10;
+
+document.getElementById('btn-print-bajada').addEventListener('click', () => {
+  if(data.length === 0){ alert('No hay personas cargadas para imprimir.'); return; }
+  const rowsToPrint = selectedIds.size > 0 ? data.filter(r => selectedIds.has(r.id)) : getVisible();
+  if(rowsToPrint.length === 0){ alert('No hay personas seleccionadas para imprimir.'); return; }
+  // Se arman grupos de hasta 10 personas por boleta, para que cada boleta entre en una sola página.
+  // Cada boleta se imprime por duplicado (dos copias lado a lado en la misma hoja).
+  const root = document.getElementById('print-root');
+  const grupos = [];
+  for(let i = 0; i < rowsToPrint.length; i += BAJADA_MAX_POR_BOLETA){
+    grupos.push(rowsToPrint.slice(i, i + BAJADA_MAX_POR_BOLETA));
+  }
+  root.innerHTML = grupos.map(grupo => {
+    const bajada = buildBajadaHTML(grupo);
+    return `<div class="print-page">${bajada}${bajada}</div>`;
+  }).join('');
+  setTimeout(() => window.print(), 80);
+});
+
+document.getElementById('btn-print-all').addEventListener('click', () => {
+  if(data.length === 0){ alert('No hay personas cargadas para imprimir.'); return; }
+  const rowsToPrint = selectedIds.size > 0 ? data.filter(r => selectedIds.has(r.id)) : getVisible();
+  if(rowsToPrint.length === 0){ alert('No hay personas seleccionadas para imprimir.'); return; }
+  const root = document.getElementById('print-root');
+  // Cada hoja lleva DOS columnas con la boleta de la misma persona (interno + legajo), lado a lado, igual que en la plantilla original.
+  root.innerHTML = rowsToPrint.map(row => {
+    const boleta = buildBoletaHTML(row);
+    return `<div class="print-page">${boleta}${boleta}</div>`;
+  }).join('');
+  setTimeout(() => window.print(), 80);
+});
+
+// ============ CONTROL DE ACCESO POR CONTRASEÑA (con rol) ============
+function enterApp(role){
+  userRole = role;
+  document.getElementById('pw-overlay').style.display = 'none';
+  document.getElementById('app-root').style.display = '';
+  sessionStorage.setItem('u19-auth', role); // se pide de nuevo al cerrar el navegador
+  applyRole();
+  loadData();
+}
+
+function tryLogin(){
+  const val = document.getElementById('pw-input').value;
+  if(val === APP_PASSWORD_EDITOR){
+    enterApp('editor');
+  } else if(val === APP_PASSWORD_VIEWER){
+    enterApp('viewer');
+  } else {
+    document.getElementById('pw-error').textContent = 'Contraseña incorrecta';
+  }
+}
+
+// Ajusta la interfaz según el rol: un "viewer" ve todo pero no puede modificar nada.
+function applyRole(){
+  const isViewer = userRole === 'viewer';
+  const badge = document.getElementById('role-badge');
+  badge.textContent = isViewer ? '👁️ Modo solo lectura' : '✎ Modo edición';
+
+  ['btn-add','btn-import','btn-del-selected'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = isViewer ? 'none' : '';
+  });
+
+  document.body.classList.toggle('viewer-mode', isViewer);
+}
+
+document.getElementById('pw-submit').addEventListener('click', tryLogin);
+document.getElementById('pw-input').addEventListener('keydown', (e) => { if(e.key === 'Enter') tryLogin(); });
+const savedRole = sessionStorage.getItem('u19-auth');
+if(savedRole === 'editor' || savedRole === 'viewer'){
+  enterApp(savedRole);
+} else {
+  document.getElementById('pw-input').focus();
+}
+</script>
+</body>
+</html>
